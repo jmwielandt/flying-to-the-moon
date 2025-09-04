@@ -10,6 +10,12 @@
 
 Las tres herramientas deben estar en el PATH.
 
+### Opcionales
+
+- rethinkdb
+
+  Puedes correrlo con o sin docker. En caso de correrlo con docker, asegúrate de que haya visibilidad de red adecuada.
+
 ## Cómo correrlo
 
 ### En local
