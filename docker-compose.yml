@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  rethinkdb:
+    image: rethinkdb:latest
+    container_name: rethinkdb
+    restart: always
+    ports:
+      - "8080:8080"
+      - "28015:28015"
+    volumes:
+      - rethinkdb_data:/data
+    # Exponemos el puerto para que otros servicios dentro de la misma red de Docker lo puedan ver.
+    expose:
+      - "8080"
+      - "28015"
+
+  app:
+    build: .
+    container_name: flying-to-the-moon
+    restart: on-failure
+    ports:
+      - "8000:8000"
+    environment:
+      # Tu aplicación se conecta al servicio de RethinkDB por su nombre de servicio.
+      DB__HOST: rethinkdb
+      # También puedes pasar otras variables de entorno si las necesitas.
+      # Por ejemplo, la base de datos a usar.
+      # RDB_DB: 'nombre_de_la_db'
+    depends_on:
+      - rethinkdb
+    
+# Definimos un volumen para la persistencia de los datos de RethinkDB.
+volumes:
+  rethinkdb_data:

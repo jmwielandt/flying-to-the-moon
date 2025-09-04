@@ -1,0 +1,48 @@
+version: "3"
+
+vars:
+  APP_NAME: flying-to-the-moon
+
+tasks:
+  init-db:
+    desc: Crea la base de datos y las tablas.
+    cmds:
+      - uv run ./scripts/init_db.py
+    env:
+      PYTHONPATH: .
+
+  seed-db:
+    desc: Pobla con datos de prueba la base de datos.
+    cmds:
+      - uv run ./scripts/seed_db.py
+    env:
+      PYTHONPATH: .
+
+  drop-db:
+    desc: Elimina la base de datos y las tablas.
+    cmds:
+      - uv run ./scripts/drop_db.py
+    env:
+      PYTHONPATH: .
+
+  run:
+    desc: Levanta el servidor fuera de docker. Pensado para desarrollo.
+    cmds:
+      # listens on port 8000, uses ipv4 and ipv6
+      - uv run waitress-serve --listen=*:8000 --call src.main:main
+
+  docker-build:
+    desc: Compila la imágen docker.
+    cmds:
+      - docker build -t {{ .APP_NAME }} -f Dockerfile --no-cache .
+      # - docker build -t {{ .APP_NAME }} -f Dockerfile .
+
+  docker-run:
+    desc: "Corre la imágen docker (FIXME: no tiene visibilidad hacia un rethinkdb en local)."
+    cmds:
+      - docker run --env-file configs/docker.env --name {{ .APP_NAME }} -p 8000:8000 --add-host host.docker.internal:host-gateway --rm {{ .APP_NAME }}
+
+  docker-compose:
+    desc: Compila la imagen docker y corre toda la infra junta.
+    cmds:
+      - docker compose up --build
