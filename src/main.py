@@ -7,6 +7,6 @@ from src.logs import config_logger
 def main():
     print("Hello from flying-to-the-moon!")
     config_logger(app_config.misc.log_level)
-    connect_db(app_config.db.host, app_config.db.port, app_config.db.name)
+    connect_db()
 
     return app
