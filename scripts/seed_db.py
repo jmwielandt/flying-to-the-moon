@@ -1,9 +1,16 @@
-import config
+import json
+
+from rethinkdb import r
+
+from src.config import app_config
+from src.db.connect import connect_db
+from src.logs import config_logger
+
+config_logger(app_config.misc.log_level)
+con = connect_db()
 
 
-def main() -> None:
-    print("Hello from seed_db.py!")
+with open("scripts/passengers_20.json", "r", encoding="utf-8") as f:
+    passengers = json.load(f)
 
-
-if __name__ == "__main__":
-    main()
+r.table("passengers").insert(passengers).run(con)
