@@ -2,6 +2,7 @@ FLIGHT_SCHEMA = {
     "type": "object",
     "properties": {
         "flightCode": {"type": "string"},
+        "capacity": {"type": "number"},
         "passengers": {
             "type": "array",
             "items": {

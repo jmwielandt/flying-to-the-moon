@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Any
 from uuid import UUID
 
 import jsonschema
@@ -8,6 +9,7 @@ from rethinkdb import r
 
 from src.api.schemas import FLIGHT_SCHEMA
 from src.db.connect import connect_db
+from src.models.flights import separate_overbooked_passengers
 
 app = Blueprint("flights", __name__, url_prefix="/flights")
 
@@ -17,13 +19,12 @@ def get_flight(flight_uuid: UUID):
     flight_id: str = str(flight_uuid)
     con = connect_db()
     result = r.table("flights").get(flight_id).run(con)
-    print(result)
     return jsonify(result)
 
 
 @app.post("/")
 def create_flight():
-    flight = request.json
+    flight: dict[str, Any] = request.json  # type: ignore
 
     # validate incoming json schema and handle the malformed case
     try:
@@ -40,10 +41,18 @@ def create_flight():
             content_type="application/json",
         )
 
+    overbooked_passengers = separate_overbooked_passengers(flight)
+    # TEMP:
+    logging.debug(
+        "OVERBOOKED_PASSENGERS:\n" + json.dumps(overbooked_passengers, indent=2)
+    )
+
     con = connect_db()
     result = r.table("flights").insert(flight).run(con)
+    flight_id = result["generated_keys"][0]
+    inserted_flight = r.table("flights").get(flight_id).run(con)
     # TODO: improve api output
-    return jsonify(result)
+    return jsonify(inserted_flight)
 
 
 @app.put("/<uuid:flight_uuid>")
